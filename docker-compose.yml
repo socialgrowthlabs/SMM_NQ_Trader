@@ -1,0 +1,16 @@
+services:
+  trader:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.trader
+    env_file: .env
+    network_mode: host
+    restart: unless-stopped
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    env_file: .env
+    ports:
+      - 8080:8080
+    restart: unless-stopped

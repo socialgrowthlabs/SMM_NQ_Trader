@@ -1,0 +1,25 @@
+version: 1
+log_level: INFO
+latency_probes: true
+usernames:
+  - name: default
+    enabled: true
+    reconnect_backoff_ms: [100, 250, 500, 1000, 2000]
+    subscriptions:
+      symbols: [NQZ5, MNQZ5]
+      depth: 10
+      mbo: true
+    risk:
+      max_daily_drawdown: 250.0
+      max_position: 4
+      max_orders_per_minute: 60
+      max_slippage_ticks: 2
+    strategy:
+      ema_period: 21
+      delta_confidence_threshold: 0.6
+      bracket:
+        target_ticks: 20
+        stop_ticks: 12
+        trail_on_momentum: true
+accounts_file: accounts/accounts.yaml
+state_dir: storage/state
