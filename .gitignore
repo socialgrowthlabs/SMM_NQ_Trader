@@ -1,0 +1,1 @@
+# Byte-compiled / optimized / DLL files\n__pycache__/\n*.py[cod]\n*.class\n\n# Virtual environments\n\.venv/\nvenv/\nENV/\n\n# Node\nnode_modules/\n\n# OS files\n.DS_Store\nThumbs.db\n\n# Editors\n.vscode/\n.idea/\n\n# Python packaging\ndist/\nbuild/\n.eggs/\n*.egg-info/\n\n# Logs\nlogs/\n*.log\n\n# dotenv\n.env\n.env.*\n

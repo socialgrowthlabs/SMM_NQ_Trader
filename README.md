@@ -1,0 +1,1 @@
+# SMM NQ Trader\n\nBootstrap repository for the SMM NQ Trader project.\n\n## Overview\n- Purpose: NQ futures trading project scaffold.\n- Status: Initial commit.\n\n## Getting Started\n1. Clone the repo.\n2. Add your modules.\n\n## License\nTBD.\n
