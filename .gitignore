@@ -28,6 +28,9 @@ build/
 logs/
 *.log
 
+# Runtime state (not for git)
+storage/state/
+
 # dotenv
 .env
 .env.*
