@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from .common import ExponentialMA, AverageTrueRange, MoneyFlowIndex, HeikenAshiState, update_heiken_ashi, EMode
@@ -13,11 +13,11 @@ class DashboardState:
     atr_period: int = 8
     mfi_period: int = 10
 
-    ema_fast: ExponentialMA = ExponentialMA(8)
-    ema_slow: ExponentialMA = ExponentialMA(21)
-    atr: AverageTrueRange = AverageTrueRange(8)
-    mfi: MoneyFlowIndex = MoneyFlowIndex(10)
-    ha: HeikenAshiState = HeikenAshiState()
+    ema_fast: ExponentialMA = field(default_factory=lambda: ExponentialMA(8))
+    ema_slow: ExponentialMA = field(default_factory=lambda: ExponentialMA(21))
+    atr: AverageTrueRange = field(default_factory=lambda: AverageTrueRange(8))
+    mfi: MoneyFlowIndex = field(default_factory=lambda: MoneyFlowIndex(10))
+    ha: HeikenAshiState = field(default_factory=HeikenAshiState)
 
     trend_switch: int = 1  # 1 bullish, -1 bearish
     background_trend: int = 0  # 1 bull, -1 bear, 0 neutral

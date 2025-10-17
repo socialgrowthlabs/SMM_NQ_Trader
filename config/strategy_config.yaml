@@ -1,0 +1,64 @@
+# Enhanced SMM Strategy Configuration
+# Optimized for high win rate and low drawdown
+
+strategy:
+  # Core parameters
+  delta_confidence_threshold: 0.42  # Adjusted threshold based on actual signal data
+  
+  # Time window restrictions (9:30-10:00 AM ET)
+  trading_window:
+    enabled: true
+    start_time: "09:30"
+    end_time: "10:00"
+    timezone: "America/New_York"
+  
+  # Account restrictions for testing
+  test_accounts: 
+    - "APEX-196119-166"
+    - "APEX-196119-167"
+  
+  # Position sizing strategy
+  position_sizing:
+    base_size: 1  # Base position size
+    max_size: 2   # Maximum position size
+    volatility_adjustment: true  # Adjust based on ATR
+    confidence_multiplier: true  # Scale with delta confidence
+  
+  # Bracket order optimization
+  bracket:
+    target_ticks: 16  # Tighter target for higher win rate
+    stop_ticks: 8     # Tighter stop for lower drawdown
+    trail_on_momentum: true
+    trail_activation_ticks: 4  # Start trailing after 4 ticks profit
+    trail_step_ticks: 2        # Trail in 2-tick steps
+    # Dynamic bracket sizing based on market conditions
+    dynamic_sizing: true
+    atr_multiplier_target: 1.5  # Target = 1.5 * ATR
+    atr_multiplier_stop: 0.8    # Stop = 0.8 * ATR
+  
+  # Exit strategy enhancements
+  exit_strategy:
+    time_based_exit: true
+    max_hold_minutes: 15  # Exit after 15 minutes max
+    profit_target_early: 8  # Take profit early at 8 ticks
+    breakeven_activation: 6  # Move to breakeven after 6 ticks profit
+    # Momentum-based exits
+    momentum_exit: true
+    momentum_threshold: 0.3  # Exit if momentum drops below threshold
+
+# Risk management
+risk:
+  max_daily_drawdown: 150.0  # Reduced for high win rate strategy
+  max_position: 2  # Smaller position size for testing
+  max_orders_per_minute: 30  # Reduced frequency
+  max_slippage_ticks: 1  # Tighter slippage control
+
+# Environment variables for testing
+env_overrides:
+  TRADING_ENABLED: "1"
+  DELTA_CONFIDENCE_THRESHOLD: "0.42"
+  TREND_OVERRIDE: "ema21"
+  REQUIRE_XSOURCE: "1"
+  TESTING_LOOSE: "0"
+  TESTING_SELL_BIAS: "0"
+

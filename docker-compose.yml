@@ -3,14 +3,17 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.trader
-    env_file: .env
+    environment:
+      TRADING_ENABLED: "1"
+      WHITELIST_ACCOUNTS: "APEX-196119-167"
+      RUN_WINDOW_SECS: "600"
+      REQUIRE_XSOURCE: "0"
     network_mode: host
     restart: unless-stopped
   dashboard:
     build:
       context: .
       dockerfile: docker/Dockerfile.dashboard
-    env_file: .env
     ports:
       - 8080:8080
     restart: unless-stopped

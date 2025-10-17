@@ -10,16 +10,67 @@ usernames:
       depth: 10
       mbo: true
     risk:
-      max_daily_drawdown: 250.0
-      max_position: 4
-      max_orders_per_minute: 60
-      max_slippage_ticks: 2
+      max_daily_drawdown: 150.0  # Reduced for high win rate strategy
+      max_position: 2  # Smaller position size for testing
+      max_orders_per_minute: 30  # Reduced frequency
+      max_slippage_ticks: 1  # Tighter slippage control
     strategy:
+      ema_fast_period: 8
       ema_period: 21
-      delta_confidence_threshold: 0.6
+      ema_trend_period: 55  # EMA55 for trend filtering (matches NinjaTrader)
+      atr_period: 8
+      mfi_period: 10
+      delta_confidence_threshold: 0.42  # Lowered to diagnose HOLD-only behavior
+      # Enhanced SMM parameters
+      enhanced_smm:
+        di_len: 14
+        di_thresh: 0.0  # Disabled for testing - allow all signals
+        delta_lookback: 50
+        delta_z: 0.0  # Disabled for testing - allow all signals
+        confirm_bars: 0  # No confirmation for testing
+        cooldown: 0  # No cooldown for testing
+        use_heiken: false  # Disabled for testing
+        use_profitwave: false  # Disabled for testing
+        profitwave_fast: 34
+        profitwave_slow: 144
+      # Time window restrictions
+      trading_window:
+        enabled: false  # Disabled for 24/7 trading
+        start_time: "09:30"  # 9:30 AM ET
+        end_time: "10:00"    # 10:00 AM ET
+        timezone: "America/New_York"
+      # Account restrictions for testing
+      test_accounts: ["PA-APEX-196119-01", "PA-APEX-196119-02", "PA-APEX-196119-03", "PA-APEX-196119-04", "PA-APEX-196119-05", "PA-APEX-196119-06", "PA-APEX-196119-07", "PA-APEX-196119-08", "PA-APEX-196119-09", "PA-APEX-196119-10", "PA-APEX-196119-11", "APEX-196119-166", "APEX-196119-167"]
+      # Position sizing strategy
+      position_sizing:
+        base_size: 1  # Base position size
+        max_size: 2   # Maximum position size
+        volatility_adjustment: true  # Adjust based on ATR
+        confidence_multiplier: true  # Scale with delta confidence
+      # Bracket order optimization - SMM signal-based targets
       bracket:
-        target_ticks: 20
-        stop_ticks: 12
+        # SMM signal-based targets (not fixed ticks)
+        use_signal_targets: true
+        target_multiplier: 1.5  # Target = signal_price * multiplier
+        stop_multiplier: 0.8   # Stop = signal_price * multiplier
+        # Fallback fixed targets if signal-based fails
+        fallback_target_ticks: 16
+        fallback_stop_ticks: 8
         trail_on_momentum: true
+        trail_activation_ticks: 4  # Start trailing after 4 ticks profit
+        trail_step_ticks: 2        # Trail in 2-tick steps
+        # Dynamic bracket sizing based on market conditions
+        dynamic_sizing: true
+        atr_multiplier_target: 1.5  # Target = 1.5 * ATR
+        atr_multiplier_stop: 0.8    # Stop = 0.8 * ATR
+      # Exit strategy enhancements
+      exit_strategy:
+        time_based_exit: true
+        max_hold_minutes: 15  # Exit after 15 minutes max
+        profit_target_early: 8  # Take profit early at 8 ticks
+        breakeven_activation: 6  # Move to breakeven after 6 ticks profit
+        # Momentum-based exits
+        momentum_exit: true
+        momentum_threshold: 0.3  # Exit if momentum drops below threshold
 accounts_file: accounts/accounts.yaml
 state_dir: storage/state
