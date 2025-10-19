@@ -679,8 +679,16 @@ async def run_trader(seconds: int) -> None:
                 trading_ok = bool(control.get("trading_enabled", bool(int(os.getenv("TRADING_ENABLED", "0")))))
                 print(f"TRADING DEBUG: final_side={final_side}, trading_ok={trading_ok}, control={control}", flush=True)
                 if final_side and trading_ok:
+                    try:
+                        print("SUBMISSION DEBUG: entering submit path", flush=True)
+                    except Exception:
+                        pass
                     # Use only accounts that are explicitly enabled
                     accounts = [acc for acc, enabled in executor.account_enabled.items() if enabled]
+                    try:
+                        print(f"SUBMISSION DEBUG: enabled_accounts={list(executor.account_enabled.keys())} resolved_accounts={accounts}", flush=True)
+                    except Exception:
+                        pass
                     if not accounts:
                         try:
                             accts = await orders.list_accounts()
@@ -692,6 +700,10 @@ async def run_trader(seconds: int) -> None:
                                 executor.set_accounts(accounts)
                         except Exception:
                             accounts = []
+                    try:
+                        print(f"SUBMISSION DEBUG: after list_accounts resolved_accounts={accounts}", flush=True)
+                    except Exception:
+                        pass
                     # Fallback: use env whitelist if still no accounts
                     if not accounts:
                         try:
@@ -713,6 +725,10 @@ async def run_trader(seconds: int) -> None:
                                 executor.set_accounts(accounts)
                         except Exception:
                             pass
+                    try:
+                        print(f"SUBMISSION DEBUG: final resolved_accounts={accounts} whitelist={list(getattr(executor,'whitelist',[]))}", flush=True)
+                    except Exception:
+                        pass
                     if accounts:
                         # Use enhanced signal submission with bar-based confidence, ATR, and SMM signal price
                         confidence_score = bar_snap.delta_confidence
