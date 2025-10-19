@@ -20,7 +20,8 @@ usernames:
       ema_trend_period: 55  # EMA55 for trend filtering (matches NinjaTrader)
       atr_period: 8
       mfi_period: 10
-      delta_confidence_threshold: 0.42  # Lowered to diagnose HOLD-only behavior
+      delta_confidence_threshold: 0.38
+# change via assistant: relaxing to 0.38
       # Enhanced SMM parameters
       enhanced_smm:
         di_len: 14
@@ -40,7 +41,7 @@ usernames:
         end_time: "10:00"    # 10:00 AM ET
         timezone: "America/New_York"
       # Account restrictions for testing
-      test_accounts: ["PA-APEX-196119-01", "PA-APEX-196119-02", "PA-APEX-196119-03", "PA-APEX-196119-04", "PA-APEX-196119-05", "PA-APEX-196119-06", "PA-APEX-196119-07", "PA-APEX-196119-08", "PA-APEX-196119-09", "PA-APEX-196119-10", "PA-APEX-196119-11", "APEX-196119-166", "APEX-196119-167"]
+      test_accounts: ["APEX-196119-167"]
       # Position sizing strategy
       position_sizing:
         base_size: 1  # Base position size
