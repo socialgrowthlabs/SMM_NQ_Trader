@@ -998,14 +998,23 @@ async def run_trader(seconds: int) -> None:
     await client.connect()
     print("CONNECTED", user, system_name, url, flush=True)
 
-    # Enumerate accounts and enable executor
+    # Enumerate accounts and enable executor (respect whitelist if provided)
     try:
         accts = await orders.list_accounts()
         ids: List[str] = []
+        try:
+            wl_env = os.getenv("WHITELIST_ACCOUNTS", "")
+            whitelist_ids = [a.strip() for a in wl_env.replace(",", " ").split() if a.strip()]
+        except Exception:
+            whitelist_ids = []
         for a in accts or []:
             aid = getattr(a, "account_id", None) or str(a)
             if aid:
-                ids.append(aid)
+                if whitelist_ids:
+                    if aid in whitelist_ids:
+                        ids.append(aid)
+                else:
+                    ids.append(aid)
         if ids:
             executor.set_accounts(ids)
             for aid in ids:
