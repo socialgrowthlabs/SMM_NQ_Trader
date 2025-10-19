@@ -299,8 +299,11 @@ async def run_trader(seconds: int) -> None:
             }
             with signals_path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(payload) + "\n")
-        except Exception:
-            pass
+        except Exception as e:
+            try:
+                print(f"WRITE_SIGNAL ERROR: {type(e).__name__}: {e}", flush=True)
+            except Exception:
+                pass
 
     def write_order_event(kind: str, event_obj) -> None:
         try:
@@ -652,7 +655,21 @@ async def run_trader(seconds: int) -> None:
                     # Log every evaluation for diagnostics
                     if sym:
                         write_signal(sym, price, bar_snap, gated)
+                    try:
+                        # Diagnostic: decision and trends
+                        print(
+                            f"COMBINED DECISION: side={getattr(gated,'side',None)} reason={getattr(gated,'reason',None)} trend_state={getattr(gated,'trend_state',None)}",
+                            flush=True
+                        )
+                    except Exception:
+                        pass
                     final_side = gated.side or decision.side
+                else:
+                    try:
+                        # Diagnostic: features not ready yet
+                        print(f"BAR_FEATURES: count={len(bar_features.bars)} ready={bar_features.is_ready()} (no signal)", flush=True)
+                    except Exception:
+                        pass
                 # Respect dashboard control file toggle
                 control = {}
                 try:
@@ -674,6 +691,27 @@ async def run_trader(seconds: int) -> None:
                                 executor.set_accounts(accounts)
                         except Exception:
                             accounts = []
+                    # Fallback: use env whitelist if still no accounts
+                    if not accounts:
+                        try:
+                            env_whitelist = os.getenv("WHITELIST_ACCOUNTS", "")
+                            env_accounts = [a.strip() for a in env_whitelist.replace(",", " ").split() if a.strip()]
+                            if env_accounts:
+                                print(f"ACCOUNTS FALLBACK: using WHITELIST_ACCOUNTS={env_accounts}", flush=True)
+                                accounts = env_accounts
+                                executor.set_accounts(accounts)
+                        except Exception:
+                            pass
+                    # Secondary fallback: use configured test_accounts
+                    if not accounts:
+                        try:
+                            cfg_accounts = list(getattr(executor, "test_accounts", []))
+                            if cfg_accounts:
+                                print(f"ACCOUNTS FALLBACK: using config test_accounts={cfg_accounts}", flush=True)
+                                accounts = cfg_accounts
+                                executor.set_accounts(accounts)
+                        except Exception:
+                            pass
                     if accounts:
                         # Use enhanced signal submission with bar-based confidence, ATR, and SMM signal price
                         confidence_score = bar_snap.delta_confidence
