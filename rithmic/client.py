@@ -718,10 +718,21 @@ async def run_trader(seconds: int) -> None:
                         confidence_score = bar_snap.delta_confidence
                         atr_value = getattr(combined.main.atr, 'current_value', 0.0) or 0.0
                         signal_price = price  # Use current price as SMM signal price
-                        print(f"ORDER SUBMISSION: submitting {final_side} signal for {symbols[0]} to accounts {accounts}", flush=True)
-                        await executor.submit_enhanced_signal(
-                            symbols[0], final_side, confidence_score, atr_value, price, accounts, signal_price
-                        )
+                        # Determine symbol safely (prefer current tick symbol if available)
+                        try:
+                            symbol_for_order = sym if sym else (symbols[0] if symbols else None)
+                        except Exception:
+                            symbol_for_order = sym if sym else None
+                        if symbol_for_order:
+                            print(f"ORDER SUBMISSION: submitting {final_side} signal for {symbol_for_order} to accounts {accounts}", flush=True)
+                            await executor.submit_enhanced_signal(
+                                symbol_for_order, final_side, confidence_score, atr_value, price, accounts, signal_price
+                            )
+                        else:
+                            try:
+                                print("ORDER SUBMISSION SKIP: no symbol available for submission", flush=True)
+                            except Exception:
+                                pass
         except Exception:
             error_count += 1
         write_metrics()
