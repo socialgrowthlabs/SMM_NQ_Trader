@@ -679,7 +679,8 @@ async def run_trader(seconds: int) -> None:
                 trading_ok = bool(control.get("trading_enabled", bool(int(os.getenv("TRADING_ENABLED", "0")))))
                 print(f"TRADING DEBUG: final_side={final_side}, trading_ok={trading_ok}, control={control}", flush=True)
                 if final_side and trading_ok:
-                    accounts = list(executor.account_enabled.keys())
+                    # Use only accounts that are explicitly enabled
+                    accounts = [acc for acc, enabled in executor.account_enabled.items() if enabled]
                     if not accounts:
                         try:
                             accts = await orders.list_accounts()
