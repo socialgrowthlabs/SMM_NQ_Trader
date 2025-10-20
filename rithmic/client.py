@@ -1,6 +1,7 @@
 import asyncio
 import os
 from typing import List
+from datetime import datetime, timezone
 
 import uvloop
 import traceback
@@ -270,8 +271,10 @@ async def run_trader(seconds: int) -> None:
     def write_signal(symbol: str, price: float, snap_obj, combined_obj) -> None:
         try:
             main = getattr(combined_obj, "main", None)
+            now_ts = time.time()
             payload = {
-                "ts": time.time(),
+                "ts": now_ts,
+                "iso_utc": datetime.fromtimestamp(now_ts, tz=timezone.utc).isoformat(),
                 "symbol": symbol,
                 "price": price,
                 "delta_confidence": getattr(snap_obj, "delta_confidence", None),
@@ -299,6 +302,13 @@ async def run_trader(seconds: int) -> None:
             }
             with signals_path.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(payload) + "\n")
+            # Warn if signal timestamp predates start of current UTC day
+            try:
+                sod = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+                if now_ts < sod:
+                    print(f"SIGNAL_TS WARNING: ts before start-of-day utc ts={now_ts}", flush=True)
+            except Exception:
+                pass
         except Exception as e:
             try:
                 print(f"WRITE_SIGNAL ERROR: {type(e).__name__}: {e}", flush=True)
@@ -661,6 +671,10 @@ async def run_trader(seconds: int) -> None:
                             f"COMBINED DECISION: side={getattr(gated,'side',None)} reason={getattr(gated,'reason',None)} trend_state={getattr(gated,'trend_state',None)}",
                             flush=True
                         )
+                        print(
+                            f"DECISION READY: utc={datetime.now(timezone.utc).isoformat()} dc={getattr(bar_snap,'delta_confidence',None)} trend={getattr(gated,'trend_state',None)}",
+                            flush=True
+                        )
                     except Exception:
                         pass
                     final_side = gated.side or decision.side
@@ -741,9 +755,15 @@ async def run_trader(seconds: int) -> None:
                             symbol_for_order = sym if sym else None
                         if symbol_for_order:
                             print(f"ORDER SUBMISSION: submitting {final_side} signal for {symbol_for_order} to accounts {accounts}", flush=True)
-                            await executor.submit_enhanced_signal(
-                                symbol_for_order, final_side, confidence_score, atr_value, price, accounts, signal_price
-                            )
+                            try:
+                                await executor.submit_enhanced_signal(
+                                    symbol_for_order, final_side, confidence_score, atr_value, price, accounts, signal_price
+                                )
+                            except Exception as e:
+                                try:
+                                    print(f"ORDER SUBMISSION ERROR: {type(e).__name__}: {e}", flush=True)
+                                except Exception:
+                                    pass
                         else:
                             try:
                                 print("ORDER SUBMISSION SKIP: no symbol available for submission", flush=True)
@@ -997,6 +1017,10 @@ async def run_trader(seconds: int) -> None:
 
     await client.connect()
     print("CONNECTED", user, system_name, url, flush=True)
+    try:
+        print(f"STARTUP: TRADING_ENABLED={executor.trading_enabled} order_plant_attached={executor.order_plant is not None} default_exchange={executor.default_exchange}", flush=True)
+    except Exception:
+        pass
 
     # Enumerate accounts and enable executor (respect whitelist if provided)
     try:
@@ -1017,6 +1041,10 @@ async def run_trader(seconds: int) -> None:
                     ids.append(aid)
         if ids:
             executor.set_accounts(ids)
+            try:
+                print(f"ENABLED_ACCOUNTS={ids}", flush=True)
+            except Exception:
+                pass
             for aid in ids:
                 accounts_state.setdefault(aid, {
                     "account_id": aid,
