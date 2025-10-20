@@ -184,16 +184,28 @@ class ExecutionEngine:
 
     def _should_allow_order(self, account_id: str, side: str, qty: int) -> (bool, str):
         if self.account_disabled.get(account_id, False):
+            try:
+                print(f"VETO: {account_id} disabled_by_drawdown", flush=True)
+            except Exception:
+                pass
             return False, "disabled_by_drawdown"
         pos = self.account_position_qty.get(account_id, 0)
         signed = qty if side.upper() == "BUY" else -qty
         if abs(pos + signed) > abs(self.max_position):
+            try:
+                print(f"VETO: {account_id} max_position_exceeded pos={pos} qty={qty} side={side} max={self.max_position}", flush=True)
+            except Exception:
+                pass
             return False, "max_position_exceeded"
         dq = self.account_order_times.setdefault(account_id, deque())
         now = time.time()
         while dq and now - dq[0] > 60.0:
             dq.popleft()
         if len(dq) >= self.max_orders_per_minute:
+            try:
+                print(f"VETO: {account_id} rate_limited per_minute={self.max_orders_per_minute}", flush=True)
+            except Exception:
+                pass
             return False, "rate_limited"
         return True, "ok"
 
