@@ -2,12 +2,20 @@
 import asyncio
 import os
 import sys
+from pathlib import Path
+from dotenv import load_dotenv
 from async_rithmic import RithmicClient, DataType
 
 async def main():
     if os.getenv("TEST_ORDER", "0") != "1":
         print("TEST_ORDER not enabled; set TEST_ORDER=1 to run")
         return
+    # Load project .env like the main trader does
+    try:
+        env_path = str((Path(__file__).resolve().parents[1] / ".env"))
+        load_dotenv(dotenv_path=env_path)
+    except Exception:
+        load_dotenv()
     account = os.getenv("WHITELIST_ACCOUNTS", "").split(",")[0].strip()
     if not account:
         print("No WHITELIST_ACCOUNTS set")
