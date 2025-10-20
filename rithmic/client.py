@@ -718,6 +718,13 @@ async def run_trader(seconds: int) -> None:
                         print(f"SUBMISSION DEBUG: after list_accounts resolved_accounts={accounts}", flush=True)
                     except Exception:
                         pass
+                    # Optional override to force target account (diagnostics only)
+                    try:
+                        if os.getenv("FORCE_167", "0") == "1":
+                            accounts = ["APEX-196119-167"]
+                            print("SUBMISSION DEBUG: FORCE_167 active -> accounts=['APEX-196119-167']", flush=True)
+                    except Exception:
+                        pass
                     # Fallback: use env whitelist if still no accounts
                     if not accounts:
                         try:
