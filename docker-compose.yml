@@ -6,8 +6,10 @@ services:
     environment:
       TRADING_ENABLED: "1"
       WHITELIST_ACCOUNTS: "APEX-196119-167"
+      FORCE_167: "1"
       RUN_WINDOW_SECS: "600"
       REQUIRE_XSOURCE: "0"
+      BYPASS_DASH_TREND: "1"
     network_mode: host
     restart: unless-stopped
   dashboard:
