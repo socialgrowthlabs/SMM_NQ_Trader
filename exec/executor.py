@@ -41,7 +41,11 @@ class ExecutionEngine:
         self.default_exchange = default_exchange
 
     def set_accounts(self, accounts: List[str]) -> None:
+        # Enforce whitelist if provided
+        wl = set(a.strip() for a in os.getenv("WHITELIST_ACCOUNTS", "").split(",") if a.strip())
         for acc in accounts:
+            if wl and acc not in wl:
+                continue
             self.account_enabled[acc] = True
             self.open_orders.setdefault(acc, {})
             self.account_realized_pnl.setdefault(acc, 0.0)

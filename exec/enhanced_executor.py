@@ -90,6 +90,10 @@ class EnhancedExecutionEngine(ExecutionEngine):
     def _calculate_position_size(self, account_id: str, confidence_score: float, atr_value: float, current_price: float) -> int:
         """Calculate optimal position size based on confidence, volatility, and risk parameters"""
         if account_id not in self.test_accounts:
+            try:
+                print(f"QTY DEBUG: account {account_id} not in test_accounts => size=0", flush=True)
+            except Exception:
+                pass
             return 0
             
         base_size = self.base_size
@@ -105,7 +109,12 @@ class EnhancedExecutionEngine(ExecutionEngine):
             base_size = int(base_size * volatility_factor)
         
         # Ensure within bounds
-        return max(1, min(base_size, self.max_size))
+        qty = max(1, min(base_size, self.max_size))
+        try:
+            print(f"QTY DEBUG: account={account_id} qty={qty} base={self.base_size} conf={confidence_score:.3f} atr={atr_value:.5f}", flush=True)
+        except Exception:
+            pass
+        return qty
     
     def _calculate_bracket_levels(self, entry_price: float, side: str, atr_value: float, signal_price: Optional[float] = None) -> tuple[int, int]:
         """Calculate dynamic bracket levels based on SMM signal prices or ATR"""
@@ -163,14 +172,26 @@ class EnhancedExecutionEngine(ExecutionEngine):
     ) -> List[EnhancedOrderIntent]:
         """Submit signal with enhanced position sizing and bracket optimization"""
         intents: List[EnhancedOrderIntent] = []
+        try:
+            print(f"ENHANCED SUBMIT: symbol={symbol} side={side} accounts={accounts}", flush=True)
+        except Exception:
+            pass
         
         for acc in accounts:
             if not self.account_enabled.get(acc, False):
+                try:
+                    print(f"SUBMIT SKIP: account {acc} not enabled", flush=True)
+                except Exception:
+                    pass
                 continue
                 
             # Calculate optimal position size
             qty = self._calculate_position_size(acc, confidence_score, atr_value, current_price)
             if qty <= 0:
+                try:
+                    print(f"SUBMIT SKIP: account {acc} qty<=0", flush=True)
+                except Exception:
+                    pass
                 continue
                 
             # Calculate dynamic bracket levels using SMM signal price
@@ -179,6 +200,10 @@ class EnhancedExecutionEngine(ExecutionEngine):
             # Check if order should be allowed
             allow, reason = self._should_allow_order(acc, side, qty)
             if not allow:
+                try:
+                    print(f"SUBMIT SKIP: account {acc} not allowed reason={reason}", flush=True)
+                except Exception:
+                    pass
                 continue
                 
             coid = self._new_client_order_id(acc)
@@ -208,6 +233,10 @@ class EnhancedExecutionEngine(ExecutionEngine):
             # Submit live order if enabled
             if self.trading_enabled and self.order_plant is not None and acc in self.whitelist:
                 try:
+                    print(f"LIVE SUBMIT: acc={acc} coid={coid} qty={qty} target={target_ticks} stop={stop_ticks} exch={exchange or self.default_exchange}", flush=True)
+                except Exception:
+                    pass
+                try:
                     tx = TransactionType.BUY if side.upper() == "BUY" else TransactionType.SELL
                     ot = OrderType.MARKET
                     ex = exchange or self.default_exchange or "CME"
@@ -223,6 +252,11 @@ class EnhancedExecutionEngine(ExecutionEngine):
                         stop_ticks=stop_ticks,
                         duration=OrderDuration.DAY
                     )
+                except Exception:
+                    pass
+            else:
+                try:
+                    print(f"LIVE SUBMIT SKIP: acc={acc} trading_enabled={self.trading_enabled} plant={self.order_plant is not None} whitelisted={acc in self.whitelist}", flush=True)
                 except Exception:
                     pass
                     
