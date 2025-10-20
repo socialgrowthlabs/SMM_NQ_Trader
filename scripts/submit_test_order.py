@@ -85,14 +85,9 @@ async def main() -> None:
         await client.connect()
         print("CONNECTED", flush=True)
         try:
-            # Resolve MNQ front-month symbol
-            try:
-                fut = await ticker.get_front_month_contract("MNQ", exchange)
-                symbol = getattr(fut, "symbol", None)
-            except Exception as e:
-                print("FRONT_MONTH_ERR:", repr(e), flush=True)
-                symbol = None
-            symbol = symbol or os.getenv("TEST_SYMBOL", "MNQ")
+            # Prefer explicit configured symbols (front-month like MNQZ5/NQZ5)
+            sym_list = [s.strip() for s in os.getenv("RITHMIC_SYMBOLS", "MNQZ5,NQZ5").split(",") if s.strip()]
+            symbol = sym_list[0] if sym_list else os.getenv("TEST_SYMBOL", "MNQZ5")
             print("TEST_ORDER_SYMBOL:", symbol, flush=True)
 
             order_id = f"TEST-{account_id}"
