@@ -89,9 +89,10 @@ class EnhancedExecutionEngine(ExecutionEngine):
     
     def _calculate_position_size(self, account_id: str, confidence_score: float, atr_value: float, current_price: float) -> int:
         """Calculate optimal position size based on confidence, volatility, and risk parameters"""
-        if account_id not in self.test_accounts:
+        # Only gate by test_accounts if a filter is configured
+        if self.test_accounts and account_id not in self.test_accounts:
             try:
-                print(f"QTY DEBUG: account {account_id} not in test_accounts => size=0", flush=True)
+                print(f"QTY DEBUG: account {account_id} not in test_accounts (filter active) => size=0", flush=True)
             except Exception:
                 pass
             return 0
